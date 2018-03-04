@@ -19,6 +19,7 @@ import java.util.stream.Collectors;
 public class CollabFileParser {
     private static final Logger logger = LoggerFactory.getLogger(CollabFileParser.class);
     public static final Character DELIMITER = '\t';
+    public static final int EXPECTED_DATA_GROUPING_COUNT = 6;
 
     public List<Collaborator> getCollaboratorsFromFile(File file) throws CollabGraphException {
         if (file == null || file.isFile() == false) {
@@ -39,25 +40,25 @@ public class CollabFileParser {
         List<Collaborator> collaborators = new ArrayList<>(lines.size());
         lines.stream()
                 .filter(l -> !l.contains("Timestamp")) //Ignore header line that contains "Timestamp"
-                .filter(l -> containsThreeDelimiters(l))
+                .filter(l -> containsCorrectDelimiterCount(l))
                 .forEach(l -> addCollaborator(l, collaborators));
         logger.info("getCollaboratorsFromFile(): Found " + collaborators.size() + " collaborators.");
         return collaborators;
     }
 
-    private boolean containsThreeDelimiters(String l) {
-        if (l != null || l.chars().filter(ch -> ch == '\t').count() == 3)
+    private boolean containsCorrectDelimiterCount(String l) {
+        if (l != null || l.chars().filter(ch -> ch == '\t').count() == EXPECTED_DATA_GROUPING_COUNT - 1)
             return true;
-        logger.error("containsThreeDelimiters() Line \"" + l + "\" does NOT contain 3 tabs, so can't be properly parsed to a Collaborator entity!");
+        logger.error("containsCorrectDelimiterCount() Line \"" + l + "\" does NOT contain 3 tabs, so can't be properly parsed to a Collaborator entity!");
         return false;
     }
 
-    private void addCollaborator(String l, List<Collaborator> collaborators) {
+    protected void addCollaborator(String l, List<Collaborator> collaborators) {
         if (l == null || collaborators == null)
             return;
         String[] pieces = l.split(DELIMITER.toString());
-        if (pieces.length != 5) {
-            logger.error("addCollaborator(): Skipping line. Expected 4 tabs in line, found " +
+        if (pieces.length != EXPECTED_DATA_GROUPING_COUNT) {
+            logger.error("addCollaborator(): Skipping line. Expected " + (EXPECTED_DATA_GROUPING_COUNT + 1) + " tabs in line, found " +
                     (pieces.length - 1) + " for line:\n\"" + l + "\"\n\"" + l.replace("\t", "{tab}") + "\"!");
             return;
         }
@@ -66,7 +67,8 @@ public class CollabFileParser {
         List<String> collaboratorNames = removeNulls(Arrays.asList(pieces[i++].split(",")));
         List<String> departments = removeNulls(Arrays.asList(pieces[i++].split(",")));
         List<String> centers = removeNulls(Arrays.asList(pieces[i++].split(",")));
-        Collaborator c = new Collaborator(name, collaboratorNames, departments, centers);
+        List<String> areas = removeNulls(Arrays.asList(pieces[i++].split(",")));
+        Collaborator c = new Collaborator(name, collaboratorNames, departments, centers, areas);
 
         logger.debug("addCollaborator(): For line \"" + l + "\":\nname: \"" + name + "\"\ncollaboratorNames: \"" + collaboratorNames
                 + "\ndepartments: \"" + departments + "\"\ncenters: \"" + centers + "\"");

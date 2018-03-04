@@ -27,6 +27,10 @@ public class Collaborator {
     @Setter
     List<String> centers = new ArrayList<>();
 
+    @Getter
+    @Setter
+    List<String> areas = new ArrayList<>();
+
     @Override
     public String toString() {
         return "Collaborator{" +
@@ -34,6 +38,7 @@ public class Collaborator {
                 ", collaborators=" + collaborators +
                 ", departments=" + departments +
                 ", centers=" + centers +
+                ", areas=" + areas +
                 '}';
     }
 
@@ -45,11 +50,12 @@ public class Collaborator {
         return Objects.equals(name, that.name) &&
                 Objects.equals(collaborators, that.collaborators) &&
                 Objects.equals(departments, that.departments) &&
-                Objects.equals(centers, that.centers);
+                Objects.equals(centers, that.centers) &&
+                Objects.equals(areas, that.areas);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(name, collaborators, departments, centers);
+        return Objects.hash(name, collaborators, departments, centers, areas);
     }
 }
