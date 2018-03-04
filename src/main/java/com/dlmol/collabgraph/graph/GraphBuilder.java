@@ -16,17 +16,6 @@ import java.util.Set;
 public class GraphBuilder {
     private static final Logger logger = LoggerFactory.getLogger(GraphBuilder.class);
 
-    protected String getStyleSheet() {
-        return  "node {" +
-                    "	fill-color: black;" +
-                    "   size: 100px;" +
-                    "}" +
-                    "node.cb3 {" +
-                    "	fill-color: blue;" +
-                    "   size: 100px;" +
-                    "}";
-    }
-
     public Graph buildGraph(Map<String, Collaborator> collaborators) {
         Graph graph = new SingleGraph("Collaboration Graph");
         if (collaborators == null)
@@ -72,8 +61,7 @@ public class GraphBuilder {
         node.addAttribute("size", "30px");
         if (c.getCenters() != null && c.getCenters().contains("CB3")) {
             logger.trace("createNode(): " + c.getName() + " is in center CB3, setting fill-color to 'red'.");
-            node.addAttribute("ui.class", "node.cb3");
-            node.addAttribute("fill-color", "blue");
+            node.addAttribute("ui.class", "cb3");
         }
     }
 
@@ -85,7 +73,7 @@ public class GraphBuilder {
     }
 
     private void addEdge(Graph graph, Collaborator c, String name) {
-        final String id = c.getName() + " and " + name;
+        final String id = c.getName() + " <-> " + name;
         if (graph.getEdge(id) == null)
             try {
                 Edge edge = graph.addEdge(id, c.getName(), name);
@@ -97,7 +85,7 @@ public class GraphBuilder {
     }
 
     private void addEdge(Graph graph, String c, String name) {
-        final String id = c + " and " + name;
+        final String id = c + " <-> " + name;
         if (graph.getEdge(id) == null)
             try {
                 Edge edge = graph.addEdge(id, c, name);
