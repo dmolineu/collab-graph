@@ -1,6 +1,7 @@
 package com.dlmol.collabgraph.graph;
 
 import com.dlmol.collabgraph.entity.Collaborator;
+import org.graphstream.graph.Edge;
 import org.graphstream.graph.EdgeRejectedException;
 import org.graphstream.graph.Graph;
 import org.graphstream.graph.Node;
@@ -27,7 +28,6 @@ public class GraphBuilder {
     }
 
     public Graph buildGraph(Map<String, Collaborator> collaborators) {
-        System.setProperty("gs.ui.renderer", "org.graphstream.ui.j2dviewer.J2DGraphRenderer");
         Graph graph = new SingleGraph("Collaboration Graph");
         if (collaborators == null)
             return graph;
@@ -43,6 +43,10 @@ public class GraphBuilder {
         collaborators.values()
                 .forEach(c -> c.getCollaborators()
                         .forEach(name -> addEdge(graph, c, name)));
+
+        graph.addAttribute("ui.quality");
+        graph.addAttribute("ui.antialias");
+        graph.addAttribute("ui.stylesheet", "url('static/graph_style.css')");
         return graph;
     }
 
@@ -57,19 +61,19 @@ public class GraphBuilder {
             Node node = graph.addNode(name);
             node.addAttribute("ui.label", name);
             node.addAttribute("ui.class", "node");
-            node.addAttribute("ui.color", "red");
-            node.addAttribute("ui.size", "30");
+            node.addAttribute("fill-color", "red");
+            node.addAttribute("size", "30px");
             return;
         }
         logger.trace("createNode(): Adding node for: \"" + c.getName() + "\"");
         Node node = graph.addNode(c.getName());
         node.addAttribute("ui.label", c.getName());
-        node.addAttribute("ui.color", "green");
-        node.addAttribute("ui.size", "30");
+        node.addAttribute("fill-color", "green");
+        node.addAttribute("size", "30px");
         if (c.getCenters() != null && c.getCenters().contains("CB3")) {
             logger.trace("createNode(): " + c.getName() + " is in center CB3, setting fill-color to 'red'.");
             node.addAttribute("ui.class", "node.cb3");
-            node.addAttribute("ui.color", "blue");
+            node.addAttribute("fill-color", "blue");
         }
     }
 
@@ -84,7 +88,8 @@ public class GraphBuilder {
         final String id = c.getName() + " and " + name;
         if (graph.getEdge(id) == null)
             try {
-                graph.addEdge(id, c.getName(), name);
+                Edge edge = graph.addEdge(id, c.getName(), name);
+                edge.addAttribute("weight", "5");
                 logger.debug("addEdge(): Added edge: " + id);
             } catch (EdgeRejectedException e) {
                 logger.info("addEdge(): Unable to create Edge: " + id);
@@ -95,7 +100,8 @@ public class GraphBuilder {
         final String id = c + " and " + name;
         if (graph.getEdge(id) == null)
             try {
-                graph.addEdge(id, c, name);
+                Edge edge = graph.addEdge(id, c, name);
+                edge.addAttribute("weight", "5");
                 logger.debug("addEdge(): Added edge: " + id);
             } catch (EdgeRejectedException e) {
                 logger.info("addEdge(): Unable to create Edge: " + id);
