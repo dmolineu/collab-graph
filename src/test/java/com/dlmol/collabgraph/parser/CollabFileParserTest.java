@@ -2,13 +2,8 @@ package com.dlmol.collabgraph.parser;
 
 import com.dlmol.collabgraph.entity.Collaborator;
 import com.dlmol.collabgraph.exception.CollabGraphException;
-import com.dlmol.collabgraph.service.CollaboratorService;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.junit4.SpringRunner;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -16,24 +11,22 @@ import java.util.List;
 
 import static org.junit.Assert.*;
 
-@RunWith(SpringRunner.class)
-@SpringBootTest
 public class CollabFileParserTest {
-    final File file = new File("src/main/resources/static/collab.tsv");
 
-    @Autowired
-    CollaboratorService collaboratorService;
+    List<Collaborator> collaborators;
 
     @Before
     public void populate() throws CollabGraphException {
-        collaboratorService.populateRepositoryFromFile(file);
-        assertNotNull(collaboratorService.getRepo());
-        assertTrue(25 == collaboratorService.getRepo().getCollaborators().values().size());
+        final File file = new File("src/main/resources/static/collab.tsv");
+        CollabFileParser parser = new CollabFileParser();
+        collaborators = parser.getCollaboratorsFromFile(file);
+        assertNotNull(collaborators);
+        assertTrue(25 == collaborators.size());
     }
 
     @Test
     public void getCollaboratorsFromFile() throws CollabGraphException {
-        Collaborator c = collaboratorService.getCollaborator("Maital Neta");
+        Collaborator c = getCollaborator(collaborators, "Maital Neta");
         assertEquals("Maital Neta", c.getName());
 
         List<String> expectedCollaborators = new ArrayList<>(c.getCollaborators().size());
@@ -54,11 +47,16 @@ public class CollabFileParserTest {
         assertEquals(expectedCenters, c.getCenters());
 
         List<String> expectedDepartments = new ArrayList<>(c.getDepartments().size());
+        expectedDepartments.add("Athletics");
         expectedDepartments.add("English");
-        expectedDepartments.add("Nutrition Health Sciences");
+        expectedDepartments.add("Nutrition & Health Sciences");
         expectedDepartments.add("Political Science");
-        assertEquals(expectedDepartments, c.getCollaborators());
+        assertEquals(expectedDepartments, c.getDepartments());
+    }
 
-
+    private Collaborator getCollaborator(List<Collaborator> collaborators, String name) {
+        return collaborators.stream()
+                .filter(c -> name.equalsIgnoreCase(c.getName()))
+                .findFirst().get();
     }
 }
