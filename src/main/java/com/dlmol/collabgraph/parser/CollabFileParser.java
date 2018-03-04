@@ -41,6 +41,7 @@ public class CollabFileParser {
                 .filter(l -> !l.contains("Timestamp")) //Ignore header line that contains "Timestamp"
                 .filter(l -> containsThreeDelimiters(l))
                 .forEach(l -> addCollaborator(l, collaborators));
+        logger.info("getCollaboratorsFromFile(): Found " + collaborators.size() + " collaborators.");
         return collaborators;
     }
 
@@ -57,7 +58,7 @@ public class CollabFileParser {
         String[] pieces = l.split(DELIMITER.toString());
         if (pieces.length != 5) {
             logger.error("addCollaborator(): Skipping line. Expected 4 tabs in line, found " +
-                    (pieces.length - 1) + " for line \"" + l + "\"!");
+                    (pieces.length - 1) + " for line:\n\"" + l + "\"\n\"" + l.replace("\t", "{tab}") + "\"!");
             return;
         }
         int i=1;

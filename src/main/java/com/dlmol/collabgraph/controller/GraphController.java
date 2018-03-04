@@ -2,8 +2,10 @@ package com.dlmol.collabgraph.controller;
 
 import com.dlmol.collabgraph.entity.Collaborator;
 import com.dlmol.collabgraph.exception.CollabGraphException;
+import com.dlmol.collabgraph.graph.GraphBuilder;
 import com.dlmol.collabgraph.repositories.CollaboratorRepository;
 import com.dlmol.collabgraph.service.CollaboratorService;
+import org.graphstream.graph.Graph;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,8 +13,10 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import javax.annotation.PostConstruct;
 import java.io.File;
 import java.util.List;
+import java.util.Map;
 
 @Controller
 public class GraphController {
@@ -22,19 +26,29 @@ public class GraphController {
     CollaboratorService collaboratorService;
 
     @Autowired
-    CollaboratorRepository repository;
+    GraphBuilder graphBuilder;
+
+    @PostConstruct
+    public void initRun(){
+        showGraph();
+    }
 
     @RequestMapping(value = "/")
     @ResponseBody
     public String showGraph() {
-        File csv = new File("src/main/resources/static/collab.tsv");
+        File file = new File("src/main/resources/static/collab.tsv");
         try {
-            collaboratorService.populateRepositoryFromFile(csv);
+            collaboratorService.populateRepositoryFromFile(file);
         } catch (CollabGraphException e) {
-            e.printStackTrace();
-            return e.getMessage();
+            logger.error("Error populated repository!", e);
+            return null;
         }
-        return collaboratorService.getCollaboratorRepository().toString();
+
+        Map<String, Collaborator> collaboratorMap = collaboratorService.getRepo().getCollaborators();
+        Graph graph = graphBuilder.buildGraph(collaboratorMap);
+        graph.display();
+
+        return collaboratorService.getRepo().toString();
     }
 
     public static String getString(List<Collaborator> collaborators) {

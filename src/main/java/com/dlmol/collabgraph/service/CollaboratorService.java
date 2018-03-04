@@ -14,15 +14,28 @@ import java.util.List;
 public class CollaboratorService {
 
     @Autowired
-    CollabFileParser csvParser;
+    private CollabFileParser fileParser;
 
     @Autowired
-            @Getter
-            @Setter
-    CollaboratorRepository collaboratorRepository;
+    @Getter
+    @Setter
+    private CollaboratorRepository repo;
 
     public void populateRepositoryFromFile(File file) throws CollabGraphException {
-        List<Collaborator> collaborators = csvParser.getCollaboratorsFromFile(file);
-        collaborators.forEach(c -> collaboratorRepository.addCollaborator(c));
+        List<Collaborator> collaborators = fileParser.getCollaboratorsFromFile(file);
+        collaborators.forEach(c -> repo.addCollaborator(c));
+    }
+
+    public void addCollaborator(Collaborator c) {
+        repo.addCollaborator(c);
+    }
+
+    public Collaborator getCollaborator(String name){
+        return repo.getCollaborator(name);
+    }
+
+    @Override
+    public String toString() {
+        return repo.toString();
     }
 }
