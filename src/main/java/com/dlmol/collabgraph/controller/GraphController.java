@@ -9,12 +9,14 @@ import org.graphstream.graph.Graph;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import javax.annotation.PostConstruct;
 import java.io.File;
+import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
@@ -29,14 +31,14 @@ public class GraphController {
     GraphBuilder graphBuilder;
 
     @PostConstruct
-    public void initRun(){
+    public void initRun() throws IOException {
         showGraph();
     }
 
     @RequestMapping(value = "/")
     @ResponseBody
-    public String showGraph() {
-        File file = new File("src/main/resources/static/collab.tsv");
+    public String showGraph() throws IOException {
+        File file = new ClassPathResource("static/collab.tsv").getFile();
         try {
             collaboratorService.populateRepositoryFromFile(file);
         } catch (CollabGraphException e) {
