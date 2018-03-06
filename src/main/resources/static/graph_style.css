@@ -50,3 +50,6 @@ edge {
     size: 3px;
     fill-color: rgb(84, 0, 8);
 }
+edge.similar {
+    fill-color: rgb(0, 0, 131);
+}

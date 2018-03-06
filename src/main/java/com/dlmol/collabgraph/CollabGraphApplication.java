@@ -10,7 +10,7 @@ public class CollabGraphApplication {
 
     public static void main(String[] args) {
         System.setProperty("java.awt.headless", "false"); //Allows graph UI to show even though this is technically a web app.
-        System.setProperty("gs.ui.renderer", "org.graphstream.ui.j2dviewer.J2DGraphRenderer");
+        System.setProperty("org.graphstream.ui.renderer", "org.graphstream.ui.j2dviewer.J2DGraphRenderer");
         SpringApplication.run(CollabGraphApplication.class, args);
     }
 }

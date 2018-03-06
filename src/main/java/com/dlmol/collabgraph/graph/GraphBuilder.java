@@ -14,10 +14,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 @Component
 public class GraphBuilder {
@@ -49,7 +46,25 @@ public class GraphBuilder {
         graph.addAttribute("ui.quality");
         graph.addAttribute("ui.antialias");
         graph.addAttribute("ui.stylesheet", "url('static/graph_style.css')");
+        graph.getEachEdge().forEach(e -> {
+            if (similarNodes(collaborators.get(e.getNode0().getId()), collaborators.get(e.getNode1().getId())))
+                e.addAttribute("ui.class", "similar");
+        });
         return graph;
+    }
+
+    private boolean similarNodes(Collaborator c0, Collaborator c1) {
+        boolean hasAreaMatch = false;
+        if (c0 == null || c1 == null)
+            return hasAreaMatch;
+        for (String a0 : c0.getAreas())
+            for (String a1 : c1.getAreas())
+                if (a0.equalsIgnoreCase(a1))
+                    hasAreaMatch = true;
+//        boolean hasAreaMatch = c0.getAreas().stream()
+//                .anyMatch(a0 -> c1.getAreas().stream().anyMatch(a1 -> Objects.equals(a0, a1)));
+        logger.trace("similarNodes(): Node \"" + c0.getName() + "\" and \"" + c1.getName() + "\" has an Area in common.");
+        return hasAreaMatch;
     }
 
     private void createNode(Graph graph, Map<String, Collaborator> collaborators, String name) {
