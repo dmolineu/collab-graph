@@ -1,6 +1,7 @@
 package com.dlmol.collabgraph.config;
 
 import com.dlmol.collabgraph.graph.GraphBuilder;
+import com.dlmol.collabgraph.properties.PropertyUtil;
 import com.dlmol.collabgraph.repositories.CollaboratorRepository;
 import com.dlmol.collabgraph.service.CollaboratorService;
 import org.springframework.context.annotation.Bean;
@@ -10,17 +11,22 @@ import org.springframework.context.annotation.Configuration;
 public class Config {
 
     @Bean
-    public CollaboratorService collaboratorService(){
+    public CollaboratorService collaboratorService() {
         return new CollaboratorService();
     }
 
     @Bean
-    public CollaboratorRepository collaboratorRepository(){
+    public CollaboratorRepository collaboratorRepository() {
         return new CollaboratorRepository();
     }
 
     @Bean
-    public GraphBuilder graphBuilder(){
+    public GraphBuilder graphBuilder() {
         return new GraphBuilder();
+    }
+
+    @Bean
+    public PropertyUtil propertyUtil() {
+        return new PropertyUtil();
     }
 }

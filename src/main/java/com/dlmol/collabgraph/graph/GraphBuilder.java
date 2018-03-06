@@ -1,20 +1,33 @@
 package com.dlmol.collabgraph.graph;
 
 import com.dlmol.collabgraph.entity.Collaborator;
+import com.dlmol.collabgraph.properties.PropertyUtil;
 import org.graphstream.graph.Edge;
 import org.graphstream.graph.EdgeRejectedException;
 import org.graphstream.graph.Graph;
 import org.graphstream.graph.Node;
 import org.graphstream.graph.implementations.SingleGraph;
+import org.javatuples.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
 
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+@Component
 public class GraphBuilder {
     private static final Logger logger = LoggerFactory.getLogger(GraphBuilder.class);
+
+    @Autowired
+    PropertyUtil propertyUtil;
+
+    @Value("#{propertyUtil.getMappingList('${node.area.class.mapping}', ';', '=', ',')}")
+    List<Pair<String, List<String>>> nodeClassMapping;
 
     public Graph buildGraph(Map<String, Collaborator> collaborators) {
         Graph graph = new SingleGraph("Collaboration Graph");
@@ -49,27 +62,30 @@ public class GraphBuilder {
             logger.warn("createNode(): Collaborator c is null! This happens when someone (" + name + ") is listed as someone else's collaborator, but didn't repond to the survey themself.");
             Node node = graph.addNode(name);
             node.addAttribute("ui.label", name);
-            node.addAttribute("ui.class", "node");
-            node.addAttribute("fill-color", "red");
-            node.addAttribute("size", "30px");
-            return;
+//            node.addAttribute("ui.class", "node");
+        } else {
+            logger.trace("createNode(): Adding node for: \"" + c.getName() + "\"");
+            Node node = graph.addNode(c.getName());
+            node.addAttribute("ui.label", c.getName());
+            setNodeClass(node, c.getAreas(), nodeClassMapping);
         }
-        logger.trace("createNode(): Adding node for: \"" + c.getName() + "\"");
-        Node node = graph.addNode(c.getName());
-        node.addAttribute("ui.label", c.getName());
-        node.addAttribute("fill-color", "green");
-        node.addAttribute("size", "30px");
-        if (c.getCenters() != null && c.getCenters().contains("CB3")) {
-            logger.trace("createNode(): " + c.getName() + " is in center CB3, setting fill-color to 'red'.");
-            node.addAttribute("ui.class", "cb3");
+    }
+
+    private void setNodeClass(Node node, List<String> areas, List<Pair<String, List<String>>> nodeClassMapping) {
+        for (Pair<String, List<String>> mapping : nodeClassMapping){
+            if (areas.containsAll(mapping.getValue1())) {
+                node.addAttribute("ui.class", mapping.getValue0());
+                logger.debug("setNodeClass(): Setting Node ID '" + node.getId() + "' to node area class: '" + mapping.getValue0() + "'.");
+                return;
+            }
         }
+        logger.debug("setNodeClass(): No node area class matched for Node ID '" + node.getId() + "' with areas: " + areas.toString());
     }
 
     private void addEdge(Graph graph, Map<String, Collaborator> collaboratorMap, String name) {
         if (collaboratorMap.get(name) == null || collaboratorMap.get(name).getCollaborators() == null)
             return;
         collaboratorMap.get(name).getCollaborators().forEach(c -> addEdge(graph, c, name));
-
     }
 
     private void addEdge(Graph graph, Collaborator c, String name) {
