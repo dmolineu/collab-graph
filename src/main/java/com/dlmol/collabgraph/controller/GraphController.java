@@ -1,7 +1,6 @@
 package com.dlmol.collabgraph.controller;
 
 import com.dlmol.collabgraph.entity.Collaborator;
-import com.dlmol.collabgraph.exception.CollabGraphException;
 import com.dlmol.collabgraph.graph.GraphBuilder;
 import com.dlmol.collabgraph.service.CollaboratorService;
 import org.graphstream.graph.Graph;
@@ -41,8 +40,10 @@ public class GraphController {
         collaboratorService.populateRepository(is);
 
         Map<String, Collaborator> collaboratorMap = collaboratorService.getRepo().getCollaborators();
-        Graph graph = graphBuilder.buildGraph(collaboratorMap);
-        graph.display();
+        Graph collaboratorGraph = graphBuilder.buildCollaboratorGraph(collaboratorMap);
+        collaboratorGraph.display();
+        Graph areaGraph = graphBuilder.buildAreaGraph(collaboratorMap);
+        areaGraph.display();
 
         return collaboratorService.getRepo().toString();
     }

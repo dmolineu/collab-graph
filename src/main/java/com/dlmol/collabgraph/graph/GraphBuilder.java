@@ -26,8 +26,35 @@ public class GraphBuilder {
     @Value("#{propertyUtil.getMappingList('${node.area.class.mapping}', ';', '=', ',')}")
     List<Pair<String, List<String>>> nodeClassMapping;
 
-    public Graph buildGraph(Map<String, Collaborator> collaborators) {
-        Graph graph = new SingleGraph("Collaboration Graph");
+    public Graph buildCollaboratorGraph(Map<String, Collaborator> collaborators) {
+        Graph graph = new SingleGraph("Collaborator Graph");
+        if (collaborators == null)
+            return graph;
+
+        Set<String> allCollaborators = new HashSet<>(collaborators.size() + 5);
+
+        collaborators.keySet().forEach(name -> allCollaborators.add(name)); //Add all names
+        collaborators.values().forEach(c -> c.getCollaborators().forEach(name -> allCollaborators.add(name))); //Add all collaborators' names.
+
+        allCollaborators.forEach(name -> createNode(graph, collaborators, name)); // Create a node for each collaborator
+        allCollaborators.forEach(name -> addEdge(graph, collaborators, name));
+
+        collaborators.values()
+                .forEach(c -> c.getCollaborators()
+                        .forEach(name -> addEdge(graph, c, name)));
+
+        graph.addAttribute("ui.quality");
+        graph.addAttribute("ui.antialias");
+        graph.addAttribute("ui.stylesheet", "url('static/graph_style.css')");
+        graph.getEachEdge().forEach(e -> {
+            if (similarNodes(collaborators.get(e.getNode0().getId()), collaborators.get(e.getNode1().getId())))
+                e.addAttribute("ui.class", "similar");
+        });
+        return graph;
+    }
+
+    public Graph buildAreaGraph(Map<String, Collaborator> collaborators) {
+        Graph graph = new SingleGraph("Area Graph");
         if (collaborators == null)
             return graph;
 
