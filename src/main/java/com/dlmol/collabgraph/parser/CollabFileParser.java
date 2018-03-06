@@ -2,12 +2,15 @@ package com.dlmol.collabgraph.parser;
 
 import com.dlmol.collabgraph.entity.Collaborator;
 import com.dlmol.collabgraph.exception.CollabGraphException;
+import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -37,6 +40,10 @@ public class CollabFileParser {
             logger.error(msg, e);
             throw new CollabGraphException(msg);
         }
+        return getCollaborators(lines);
+    }
+
+    private List<Collaborator> getCollaborators(List<String> lines) {
         List<Collaborator> collaborators = new ArrayList<>(lines.size());
         lines.stream()
                 .filter(l -> !l.contains("Timestamp")) //Ignore header line that contains "Timestamp"
@@ -81,5 +88,11 @@ public class CollabFileParser {
                 .filter(s -> !nullStr.equalsIgnoreCase(s.trim().toUpperCase()))
                 .map(s -> s.trim())
                 .collect(Collectors.toList());
+    }
+
+    public List<Collaborator> getCollaboratorsFromStream(InputStream is) throws IOException {
+        List<String> lines = Arrays.asList(IOUtils.toString(is, StandardCharsets.UTF_8.name()).split("\n"));
+        is.close();
+        return getCollaborators(lines);
     }
 }

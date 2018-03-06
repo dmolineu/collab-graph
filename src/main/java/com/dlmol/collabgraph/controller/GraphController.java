@@ -3,7 +3,6 @@ package com.dlmol.collabgraph.controller;
 import com.dlmol.collabgraph.entity.Collaborator;
 import com.dlmol.collabgraph.exception.CollabGraphException;
 import com.dlmol.collabgraph.graph.GraphBuilder;
-import com.dlmol.collabgraph.repositories.CollaboratorRepository;
 import com.dlmol.collabgraph.service.CollaboratorService;
 import org.graphstream.graph.Graph;
 import org.slf4j.Logger;
@@ -15,8 +14,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import javax.annotation.PostConstruct;
-import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.List;
 import java.util.Map;
 
@@ -38,13 +37,8 @@ public class GraphController {
     @RequestMapping(value = "/")
     @ResponseBody
     public String showGraph() throws IOException {
-        File file = new ClassPathResource("static/collab.tsv").getFile();
-        try {
-            collaboratorService.populateRepositoryFromFile(file);
-        } catch (CollabGraphException e) {
-            logger.error("Error populated repository!", e);
-            return null;
-        }
+        InputStream is = new ClassPathResource("static/collab.tsv").getInputStream();
+        collaboratorService.populateRepository(is);
 
         Map<String, Collaborator> collaboratorMap = collaboratorService.getRepo().getCollaborators();
         Graph graph = graphBuilder.buildGraph(collaboratorMap);

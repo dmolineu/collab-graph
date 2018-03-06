@@ -9,6 +9,8 @@ import lombok.Setter;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.List;
 
 public class CollaboratorService {
@@ -21,8 +23,13 @@ public class CollaboratorService {
     @Setter
     private CollaboratorRepository repo;
 
-    public void populateRepositoryFromFile(File file) throws CollabGraphException {
+    public void populateRepository(File file) throws CollabGraphException {
         List<Collaborator> collaborators = fileParser.getCollaboratorsFromFile(file);
+        collaborators.forEach(c -> repo.addCollaborator(c));
+    }
+
+    public void populateRepository(InputStream is) throws IOException {
+        List<Collaborator> collaborators = fileParser.getCollaboratorsFromStream(is);
         collaborators.forEach(c -> repo.addCollaborator(c));
     }
 
