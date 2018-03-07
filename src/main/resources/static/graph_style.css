@@ -53,3 +53,6 @@ edge {
 edge.similar {
     fill-color: rgb(0, 0, 131);
 }
+edge.area {
+    fill-color: rgb(35, 2, 0);
+}

@@ -23,8 +23,15 @@ public class PropertyUtil {
                 Arrays.asList(entries).stream()
                         .map(e -> getPair(keySep, itemSep, e))
                         .collect(Collectors.toList());
-        logger.trace("getMappingList(): Returning: " + ReflectionToStringBuilder.toString(mapping));
+        logger.trace("getMappingList(): Returning: " + getMappingString(mapping));
         return mapping;
+    }
+
+    private String getMappingString(List<Pair<String, List<String>>> mapping) {
+        StringBuilder sb = new StringBuilder("\n");
+        mapping.forEach(p -> sb.append("\tkey: \"" + p.getValue0() + "\", values: \"" +
+                StringUtils.join(p.getValue1(), "\", \"") + "\"\n"));
+        return sb.toString();
     }
 
     private Pair<String, List<String>> getPair(String keySep, String itemSep, String entry) {

@@ -1,5 +1,6 @@
 package com.dlmol.collabgraph.graph;
 
+import com.dlmol.collabgraph.entity.AreaInteractionRepository;
 import com.dlmol.collabgraph.entity.Collaborator;
 import com.dlmol.collabgraph.properties.PropertyUtil;
 import org.graphstream.graph.Edge;
@@ -26,6 +27,7 @@ public class GraphBuilder {
     @Value("#{propertyUtil.getMappingList('${node.area.class.mapping}', ';', '=', ',')}")
     List<Pair<String, List<String>>> nodeClassMapping;
 
+    //http://graphstream-project.org/doc/FAQ/Attributes/Is-there-a-list-of-attributes-with-a-predefined-meaning-for-the-layout-algorithms/
     public Graph buildCollaboratorGraph(Map<String, Collaborator> collaborators) {
         Graph graph = new SingleGraph("Collaborator Graph");
         if (collaborators == null)
@@ -58,26 +60,50 @@ public class GraphBuilder {
         if (collaborators == null)
             return graph;
 
-        Set<String> allCollaborators = new HashSet<>(collaborators.size() + 5);
+        Set<String> areas = new HashSet<>();
+        collaborators.values().forEach(c -> c.getAreas().forEach(a -> areas.add(a)));
+        AreaInteractionRepository aiRepository = new AreaInteractionRepository();
+        collaborators.values().forEach(c -> {
+            List<String> collaboratorsAreas = getCollaboratorsAreas(c.getCollaborators(), collaborators);
+            c.getAreas().forEach(a -> collaboratorsAreas.forEach(ca -> aiRepository.addAreaInteraction(a, ca)));
+        }); //Add all collaborators' names.
 
-        collaborators.keySet().forEach(name -> allCollaborators.add(name)); //Add all names
-        collaborators.values().forEach(c -> c.getCollaborators().forEach(name -> allCollaborators.add(name))); //Add all collaborators' names.
+        //Create Area Nodes
+        areas.forEach(area -> {
+            Node node = graph.addNode(area);
+            node.addAttribute("ui.label", area);
+        });
 
-        allCollaborators.forEach(name -> createNode(graph, collaborators, name)); // Create a node for each collaborator
-        allCollaborators.forEach(name -> addEdge(graph, collaborators, name));
-
-        collaborators.values()
-                .forEach(c -> c.getCollaborators()
-                        .forEach(name -> addEdge(graph, c, name)));
+        //Create Area Edges
+        aiRepository.getAreaInteractions().stream()
+                .filter(ai -> ai.getAreas().size() == 2 && !ai.getAreas().get(0).equalsIgnoreCase(ai.getAreas().get(1)))
+                .forEach(ai -> {
+            Edge edge = graph.addEdge(ai.getAreasLabel(), ai.getAreas().get(0), ai.getAreas().get(1));
+                    final double edgeWeight = Double.valueOf(ai.getCount() / aiRepository.getMaxCount()).doubleValue();
+                    edge.setAttribute("weight", edgeWeight);
+            edge.addAttribute("ui.class", "area");
+            logger.trace("Created area Edge \"" + ai.getAreasLabel() + "\" with size: " + edgeWeight);
+        });
 
         graph.addAttribute("ui.quality");
         graph.addAttribute("ui.antialias");
         graph.addAttribute("ui.stylesheet", "url('static/graph_style.css')");
-        graph.getEachEdge().forEach(e -> {
-            if (similarNodes(collaborators.get(e.getNode0().getId()), collaborators.get(e.getNode1().getId())))
-                e.addAttribute("ui.class", "similar");
-        });
         return graph;
+    }
+
+    /**
+     * @param names
+     * @param collaborators
+     * @return List of Areas for each collaborator in List of Names.
+     */
+    private List<String> getCollaboratorsAreas(List<String> names, Map<String, Collaborator> collaborators) {
+        ArrayList<String> areas = new ArrayList<>();
+        if (names == null || collaborators == null || collaborators.size() == 0)
+            return areas;
+        collaborators.values().stream()
+                .filter(c -> names.contains(c.getName()))
+                .forEach(c -> areas.addAll(c.getAreas()));
+        return areas;
     }
 
     private boolean similarNodes(Collaborator c0, Collaborator c1) {
@@ -114,7 +140,7 @@ public class GraphBuilder {
     }
 
     private void setNodeClass(Node node, List<String> areas, List<Pair<String, List<String>>> nodeClassMapping) {
-        for (Pair<String, List<String>> mapping : nodeClassMapping){
+        for (Pair<String, List<String>> mapping : nodeClassMapping) {
             if (areas.containsAll(mapping.getValue1())) {
                 node.addAttribute("ui.class", mapping.getValue0());
                 logger.debug("setNodeClass(): Setting Node ID '" + node.getId() + "' to node area class: '" + mapping.getValue0() + "'.");

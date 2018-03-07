@@ -77,8 +77,8 @@ public class CollabFileParser {
         List<String> areas = removeNulls(Arrays.asList(pieces[i++].split(",")));
         Collaborator c = new Collaborator(name, collaboratorNames, departments, centers, areas);
 
-        logger.debug("addCollaborator(): For line \"" + l + "\":\nname: \"" + name + "\"\ncollaboratorNames: \"" + collaboratorNames
-                + "\ndepartments: \"" + departments + "\"\ncenters: \"" + centers + "\"");
+        logger.debug("addCollaborator(): For line \"" + l + "\":\nname: \"" + name + "\"\ncollaboratorNames: " + collaboratorNames
+                + "\ndepartments: " + departments + "\ncenters: " + centers + "\nareas: " + areas);
         collaborators.add(c);
     }
 
