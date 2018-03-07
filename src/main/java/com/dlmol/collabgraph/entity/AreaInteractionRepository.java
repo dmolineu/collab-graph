@@ -33,9 +33,10 @@ public class AreaInteractionRepository {
         return null;
     }
 
-    public Integer getMaxCount() {
+    public Integer getMinCount() {
         return areaInteractions.stream()
                 .map(ai -> Integer.valueOf(ai.getCount()))
-                .max(Integer::compareTo).orElseThrow(NoSuchElementException::new);
+                .filter(c -> c > 0)
+                .min(Integer::compareTo).orElseThrow(NoSuchElementException::new);
     }
 }

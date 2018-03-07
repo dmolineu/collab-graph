@@ -1,5 +1,6 @@
 package com.dlmol.collabgraph.graph;
 
+import com.dlmol.collabgraph.entity.AreaInteraction;
 import com.dlmol.collabgraph.entity.AreaInteractionRepository;
 import com.dlmol.collabgraph.entity.Collaborator;
 import com.dlmol.collabgraph.properties.PropertyUtil;
@@ -9,6 +10,7 @@ import org.graphstream.graph.Graph;
 import org.graphstream.graph.Node;
 import org.graphstream.graph.implementations.SingleGraph;
 import org.javatuples.Pair;
+import org.javatuples.Triplet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,7 +29,7 @@ public class GraphBuilder {
     @Value("#{propertyUtil.getMappingList('${node.area.class.mapping}', ';', '=', ',')}")
     List<Pair<String, List<String>>> nodeClassMapping;
 
-    //http://graphstream-project.org/doc/FAQ/Attributes/Is-there-a-list-of-attributes-with-a-predefined-meaning-for-the-layout-algorithms/
+    // http://graphstream-project.org/doc/FAQ/Attributes/Is-there-a-list-of-attributes-with-a-predefined-meaning-for-the-layout-algorithms/
     public Graph buildCollaboratorGraph(Map<String, Collaborator> collaborators) {
         Graph graph = new SingleGraph("Collaborator Graph");
         if (collaborators == null)
@@ -47,7 +49,7 @@ public class GraphBuilder {
 
         graph.addAttribute("ui.quality");
         graph.addAttribute("ui.antialias");
-        graph.addAttribute("ui.stylesheet", "url('static/graph_style.css')");
+        graph.addAttribute("ui.stylesheet", "url('static/collab_graph_style.css')");
         graph.getEachEdge().forEach(e -> {
             if (similarNodes(collaborators.get(e.getNode0().getId()), collaborators.get(e.getNode1().getId())))
                 e.addAttribute("ui.class", "similar");
@@ -66,29 +68,49 @@ public class GraphBuilder {
         collaborators.values().forEach(c -> {
             List<String> collaboratorsAreas = getCollaboratorsAreas(c.getCollaborators(), collaborators);
             c.getAreas().forEach(a -> collaboratorsAreas.forEach(ca -> aiRepository.addAreaInteraction(a, ca)));
-        }); //Add all collaborators' names.
+        });
+        logger.debug("Area count: " + areas.size());
 
+        List<Triplet> coords = new ArrayList<>(areas.size());
+        coords.add(new Triplet (0,0,0));
+        coords.add(new Triplet (0,0,1));
+        coords.add(new Triplet (0,1,0));
+        coords.add(new Triplet (1,0,0));
+        coords.add(new Triplet (1,0,1));
+        int coordCnt = 0;
         //Create Area Nodes
-        areas.forEach(area -> {
+        for (String area : areas) {
             Node node = graph.addNode(area);
             node.addAttribute("ui.label", area);
-        });
+            final Triplet coord = coords.get(coordCnt++);
+            node.setAttribute("xyz", coord.getValue0(), coord.getValue1(), coord.getValue2());
+        }
 
+        int minCount = aiRepository.getAreaInteractions().stream()
+                .filter(ai -> isValidAreaInteraction(ai))
+                .map(ai -> ai.getCount())
+                .min(Integer::compareTo)
+                .orElseThrow(NoSuchElementException::new);
         //Create Area Edges
         aiRepository.getAreaInteractions().stream()
-                .filter(ai -> ai.getAreas().size() == 2 && !ai.getAreas().get(0).equalsIgnoreCase(ai.getAreas().get(1)))
+                .filter(ai -> isValidAreaInteraction(ai))
                 .forEach(ai -> {
-            Edge edge = graph.addEdge(ai.getAreasLabel(), ai.getAreas().get(0), ai.getAreas().get(1));
-                    final double edgeWeight = Double.valueOf(ai.getCount() / aiRepository.getMaxCount()).doubleValue();
-                    edge.setAttribute("weight", edgeWeight);
-            edge.addAttribute("ui.class", "area");
-            logger.trace("Created area Edge \"" + ai.getAreasLabel() + "\" with size: " + edgeWeight);
-        });
+                    Edge edge = graph.addEdge(ai.getAreasLabel(), ai.getAreas().get(0), ai.getAreas().get(1));
+                    final int edgeWeight = (ai.getCount() / minCount);
+                    edge.setAttribute("ui.style", "size: " + edgeWeight + "px;");
+                    edge.setAttribute("ui.class", "area");
+                    logger.trace("Created area Edge \"" + ai.getAreasLabel() + "\" with size: " + edgeWeight);
+                });
 
         graph.addAttribute("ui.quality");
+        graph.addAttribute("layout.quality", 4);
         graph.addAttribute("ui.antialias");
-        graph.addAttribute("ui.stylesheet", "url('static/graph_style.css')");
+        graph.addAttribute("ui.stylesheet", "url('static/area_graph_style.css')");
         return graph;
+    }
+
+    private boolean isValidAreaInteraction(AreaInteraction ai) {
+        return ai.getAreas().size() == 2 && !ai.getAreas().get(0).equalsIgnoreCase(ai.getAreas().get(1));
     }
 
     /**

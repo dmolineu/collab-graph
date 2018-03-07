@@ -1,0 +1,20 @@
+graph {
+    fill-color: rgb(226, 237, 255);
+    padding: 100px;
+}
+node {
+    size: 50px;
+    shadow-mode: gradient-radial;
+    shadow-color: rgb(0, 39, 104), rgb(226, 237, 255);
+    fill-color: rgb(127, 127, 127);
+    text-background-mode: plain;
+    text-background-color: rgb(226, 237, 255);
+    text-size: 16;
+    text-style: bold;
+    text-alignment: above;
+}
+edge {
+    shape: line;
+    /*size: 3px;*/
+    fill-color: rgb(84, 0, 8);
+}

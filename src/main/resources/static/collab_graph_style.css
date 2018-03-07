@@ -1,5 +1,6 @@
 graph {
     fill-color: rgb(226, 237, 255);
+    padding: 100px;
 }
 node {
     size: 30px;

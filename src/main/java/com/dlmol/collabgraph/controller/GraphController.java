@@ -4,6 +4,7 @@ import com.dlmol.collabgraph.entity.Collaborator;
 import com.dlmol.collabgraph.graph.GraphBuilder;
 import com.dlmol.collabgraph.service.CollaboratorService;
 import org.graphstream.graph.Graph;
+import org.graphstream.ui.view.Viewer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -41,9 +42,12 @@ public class GraphController {
 
         Map<String, Collaborator> collaboratorMap = collaboratorService.getRepo().getCollaborators();
         Graph collaboratorGraph = graphBuilder.buildCollaboratorGraph(collaboratorMap);
-        collaboratorGraph.display();
+        Viewer collabViewer = collaboratorGraph.display();
+        collabViewer.disableAutoLayout();
+
         Graph areaGraph = graphBuilder.buildAreaGraph(collaboratorMap);
-        areaGraph.display();
+        Viewer areaViewer = areaGraph.display();
+        areaViewer.disableAutoLayout();
 
         return collaboratorService.getRepo().toString();
     }
