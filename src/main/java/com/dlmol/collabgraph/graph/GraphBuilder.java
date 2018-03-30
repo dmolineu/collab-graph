@@ -17,7 +17,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
+import java.awt.*;
 import java.util.*;
+import java.util.List;
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.stream.IntStream;
 
 @Component
 public class GraphBuilder {
@@ -40,13 +44,16 @@ public class GraphBuilder {
         collaborators.keySet().forEach(name -> allCollaborators.add(name)); //Add all names
         collaborators.values().forEach(c -> c.getCollaborators().forEach(name -> allCollaborators.add(name))); //Add all collaborators' names.
 
-        allCollaborators.forEach(name -> createNode(graph, collaborators, name)); // Create a node for each collaborator
+        Queue<Pair<Integer, Integer>> circleCoords = getCircleCoords(getScreenWidth(), getScreenHeight(), 80, allCollaborators.size());
+
+        allCollaborators.forEach(name -> createNode(graph, collaborators, name, circleCoords)); // Create a node for each collaborator
         allCollaborators.forEach(name -> addEdge(graph, collaborators, name));
 
         collaborators.values()
                 .forEach(c -> c.getCollaborators()
                         .forEach(name -> addEdge(graph, c, name)));
 
+        graph.addAttribute("layout.quality", 4);
         graph.addAttribute("ui.quality");
         graph.addAttribute("ui.antialias");
         graph.addAttribute("ui.stylesheet", "url('static/collab_graph_style.css')");
@@ -55,6 +62,28 @@ public class GraphBuilder {
                 e.addAttribute("ui.class", "similar");
         });
         return graph;
+    }
+
+    public static Queue<Pair<Integer, Integer>> getCircleCoords(final int xMax, final int yMax, final int padding, final int n) {
+        Queue<Pair<Integer, Integer>> coords = new ArrayBlockingQueue<>(n);
+        final int centerX = xMax / 2;
+        final int centerY = yMax / 2;
+        final int xRadius = centerX - padding;
+        final int yRadius = centerY - padding;
+//        IntStream.of(n).forEach(m -> {
+        for (int m=0; m<n; m++) {
+            final int x = (int) (xRadius * Math.sin(2 * m * Math.PI / n) + 0.5 + centerX);
+            final int y = (int) (yRadius * Math.cos(2 * m * Math.PI / n) + 0.5 + centerY);
+            coords.add(new Pair<>(x, y));
+        }
+//        });
+        if (n == coords.size())
+            logger.debug("getCircleCoords(" + n + "): Returning " + coords.size() + " coordinates: " + coords.toString());
+        else
+            logger.error("getCircleCoords(" + n + "): Returning " + coords.size() + ", expected " + n +
+                    "!\n\tCoordinates: " + coords.toString());
+
+        return coords;
     }
 
     public Graph buildAreaGraph(Map<String, Collaborator> collaborators) {
@@ -71,19 +100,13 @@ public class GraphBuilder {
         });
         logger.debug("Area count: " + areas.size());
 
-        List<Triplet> coords = new ArrayList<>(areas.size());
-        coords.add(new Triplet (0,0,0));
-        coords.add(new Triplet (0,0,1));
-        coords.add(new Triplet (0,1,0));
-        coords.add(new Triplet (1,0,0));
-        coords.add(new Triplet (1,0,1));
-        int coordCnt = 0;
+        Queue<Pair<Integer, Integer>> circleCoords = getCircleCoords(getScreenWidth(), getScreenHeight(), 80, areas.size());
         //Create Area Nodes
         for (String area : areas) {
             Node node = graph.addNode(area);
             node.addAttribute("ui.label", area);
-            final Triplet coord = coords.get(coordCnt++);
-            node.setAttribute("xyz", coord.getValue0(), coord.getValue1(), coord.getValue2());
+            final Pair<Integer, Integer> coord = circleCoords.remove();
+            node.setAttribute("xy", coord.getValue0(), coord.getValue1());
         }
 
         int minCount = aiRepository.getAreaInteractions().stream()
@@ -102,8 +125,8 @@ public class GraphBuilder {
                     logger.trace("Created area Edge \"" + ai.getAreasLabel() + "\" with size: " + edgeWeight);
                 });
 
-        graph.addAttribute("ui.quality");
         graph.addAttribute("layout.quality", 4);
+        graph.addAttribute("ui.quality");
         graph.addAttribute("ui.antialias");
         graph.addAttribute("ui.stylesheet", "url('static/area_graph_style.css')");
         return graph;
@@ -142,23 +165,26 @@ public class GraphBuilder {
         return hasAreaMatch;
     }
 
-    private void createNode(Graph graph, Map<String, Collaborator> collaborators, String name) {
+    private Node createNode(Graph graph, Map<String, Collaborator> collaborators, String name, Queue<Pair<Integer, Integer>> circleCoords) {
         if (collaborators == null) {
             logger.error("createNode(): Collaborators is null!");
-            return;
+            return null;
         }
         Collaborator c = collaborators.get(name);
+        Node node;
         if (c == null) {
             logger.warn("createNode(): Collaborator c is null! This happens when someone (" + name + ") is listed as someone else's collaborator, but didn't repond to the survey themself.");
-            Node node = graph.addNode(name);
+            node = graph.addNode(name);
             node.addAttribute("ui.label", name);
-//            node.addAttribute("ui.class", "node");
         } else {
             logger.trace("createNode(): Adding node for: \"" + c.getName() + "\"");
-            Node node = graph.addNode(c.getName());
+            node = graph.addNode(c.getName());
             node.addAttribute("ui.label", c.getName());
             setNodeClass(node, c.getAreas(), nodeClassMapping);
         }
+        Pair<Integer, Integer> coord = circleCoords.remove();
+        node.setAttribute("xy", coord.getValue0(), coord.getValue1());
+        return node;
     }
 
     private void setNodeClass(Node node, List<String> areas, List<Pair<String, List<String>>> nodeClassMapping) {
@@ -200,5 +226,19 @@ public class GraphBuilder {
             } catch (EdgeRejectedException e) {
                 logger.info("addEdge(): Unable to create Edge: " + id);
             }
+    }
+
+    private static int getScreenWidth(){
+        GraphicsDevice gd = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice();
+        int width = gd.getDisplayMode().getWidth();
+        logger.debug("getScreenWidth(): Returning: " + width);
+        return width;
+    }
+
+    private static int getScreenHeight(){
+        GraphicsDevice gd = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice();
+        int height = gd.getDisplayMode().getHeight();
+        logger.debug("getScreenHeight(): Returning: " + height);
+        return height;
     }
 }
