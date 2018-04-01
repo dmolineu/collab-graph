@@ -16,7 +16,7 @@ public class Collaborator {
     @Setter
     String name;
 
-    @Getter()
+    @Getter
     @Setter
     List<String> collaborators = new ArrayList<>();
 
