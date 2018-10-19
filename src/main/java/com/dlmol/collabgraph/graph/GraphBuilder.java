@@ -100,7 +100,7 @@ public class GraphBuilder {
         });
         logger.debug("Area count: " + areas.size());
 
-        Queue<Pair<Integer, Integer>> circleCoords = getCircleCoords(getScreenWidth(), getScreenHeight(), 80, areas.size());
+        Queue<Pair<Integer, Integer>> circleCoords = getCircleCoords(getScreenHeight(), getScreenHeight(), 80, areas.size());
         //Create Area Nodes
         for (String area : areas) {
             Node node = graph.addNode(area);

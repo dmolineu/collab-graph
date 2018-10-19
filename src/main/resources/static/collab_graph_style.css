@@ -19,6 +19,10 @@ node.nbsc {
     fill-color: rgb(0, 0, 255);
     stroke-color: #dc0000;
 }
+node.scnb {
+    fill-color: #dc0000;
+    stroke-color: rgb(0, 0, 255);
+}
 node.nbc {
     fill-color: rgb(0, 0, 255);
     stroke-color: #ede534;
@@ -33,7 +37,7 @@ node.sclp {
 }
 node.scd {
     fill-color: rgb(255, 255, 255);
-    stroke-color: #910900;
+    stroke-color: rgb(220, 0, 0);
 }
 node.lpc {
     fill-color: rgb(237, 229, 52);
