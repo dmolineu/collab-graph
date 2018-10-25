@@ -59,7 +59,7 @@ public class GraphController {
         Viewer areaViewer = areaGraph.display();
         areaViewer.disableAutoLayout();
         areaViewer.setCloseFramePolicy(Viewer.CloseFramePolicy.HIDE_ONLY);
-*/
+        */
 
         Graph collaboratorGraph = graphBuilder.buildCollaboratorGraph(collaboratorMap);
         Viewer collabViewer = collaboratorGraph.display();
@@ -73,7 +73,7 @@ public class GraphController {
             try {
                 fromViewer.blockingPump();
             } catch (InterruptedException e) {
-                e.printStackTrace();
+                logger.error("showGraph(): " + e.getMessage(), e);
             }
         }
 
