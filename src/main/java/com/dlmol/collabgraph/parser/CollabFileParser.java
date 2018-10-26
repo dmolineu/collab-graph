@@ -32,6 +32,7 @@ public class CollabFileParser {
             logger.error("File: " + file.getAbsolutePath() + " is empty!");
             return new ArrayList<>(0);
         }
+        logger.info("Getting collaborators from file: " + file.getAbsolutePath());
         List<String> lines;
         try {
             lines = Files.readAllLines(Paths.get(file.getPath()));

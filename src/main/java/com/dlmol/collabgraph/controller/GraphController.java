@@ -2,14 +2,15 @@ package com.dlmol.collabgraph.controller;
 
 import com.dlmol.collabgraph.entity.Collaborator;
 import com.dlmol.collabgraph.graph.GraphBuilder;
-import com.dlmol.collabgraph.service.CollaboratorService;
 import com.dlmol.collabgraph.listener.LinkViewerListener;
+import com.dlmol.collabgraph.service.CollaboratorService;
 import org.graphstream.graph.Graph;
 import org.graphstream.ui.view.Viewer;
 import org.graphstream.ui.view.ViewerPipe;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -34,6 +35,12 @@ public class GraphController {
     @Autowired
     LinkViewerListener linkViewerListener;
 
+    @Value("${show.area.graph}")
+    boolean showAreaGraph;
+
+    @Value("${links.enabled}")
+    boolean linksEnabled;
+
     public static String getString(List<Collaborator> collaborators) {
         if (collaborators == null || collaborators.size() == 0)
             return "";
@@ -57,29 +64,29 @@ public class GraphController {
 
         Map<String, Collaborator> collaboratorMap = collaboratorService.getRepo().getCollaborators();
 
-        /*
-        Graph areaGraph = graphBuilder.buildAreaGraph(collaboratorMap);
-        Viewer areaViewer = areaGraph.display();
-        areaViewer.disableAutoLayout();
-        areaViewer.setCloseFramePolicy(Viewer.CloseFramePolicy.HIDE_ONLY);
-        */
+        if (showAreaGraph) {
+            Graph areaGraph = graphBuilder.buildAreaGraph(collaboratorMap);
+            Viewer areaViewer = areaGraph.display();
+            areaViewer.disableAutoLayout();
+            areaViewer.setCloseFramePolicy(Viewer.CloseFramePolicy.HIDE_ONLY);
+        }
 
         Graph collaboratorGraph = graphBuilder.buildCollaboratorGraph(collaboratorMap);
         Viewer collabViewer = collaboratorGraph.display();
         collabViewer.setCloseFramePolicy(Viewer.CloseFramePolicy.HIDE_ONLY);
         collabViewer.disableAutoLayout();
-        ViewerPipe fromViewer = collabViewer.newViewerPipe();
-        fromViewer.addViewerListener(linkViewerListener);
-        fromViewer.addSink(collaboratorGraph);
-
-        while (true) {
-            try {
-                fromViewer.blockingPump();
-            } catch (InterruptedException e) {
-                logger.error("showGraph(): " + e.getMessage(), e);
+        if (linksEnabled) {
+            ViewerPipe fromViewer = collabViewer.newViewerPipe();
+            fromViewer.addViewerListener(linkViewerListener);
+            fromViewer.addSink(collaboratorGraph);
+            while (true) {
+                try {
+                    fromViewer.blockingPump();
+                } catch (InterruptedException e) {
+                    logger.error("showGraph(): " + e.getMessage(), e);
+                }
             }
         }
-
-//        return collaboratorService.getRepo().toString();
+        return collaboratorService.getRepo().toString();
     }
 }
