@@ -69,7 +69,8 @@ public class GraphController {
             Viewer areaViewer = areaGraph.display();
             areaViewer.disableAutoLayout();
             areaViewer.setCloseFramePolicy(Viewer.CloseFramePolicy.HIDE_ONLY);
-        }
+        } else
+            logger.info("'show.area.graph' property set to false, skipping Area Graph display.");
 
         Graph collaboratorGraph = graphBuilder.buildCollaboratorGraph(collaboratorMap);
         Viewer collabViewer = collaboratorGraph.display();
@@ -86,7 +87,8 @@ public class GraphController {
                     logger.error("showGraph(): " + e.getMessage(), e);
                 }
             }
-        }
+        }else
+            logger.info("'links.enabled' property set to false, Nodes will not launch links when clicked now.");
         return collaboratorService.getRepo().toString();
     }
 }
