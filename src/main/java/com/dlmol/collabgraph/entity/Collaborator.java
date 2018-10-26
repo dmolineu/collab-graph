@@ -18,6 +18,10 @@ public class Collaborator {
 
     @Getter
     @Setter
+    String url;
+
+    @Getter
+    @Setter
     List<String> collaborators = new ArrayList<>();
 
     @Getter

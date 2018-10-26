@@ -18,7 +18,7 @@ public class CollabFileParserTest {
     @Before
     public void populate() throws CollabGraphException {
         final File file = new File("src/main/resources/static/collab.tsv");
-        final int expectedCount = 29;
+        final int expectedCount = 31;
         CollabFileParser parser = new CollabFileParser();
         collaborators = parser.getCollaboratorsFromFile(file);
         assertNotNull(collaborators);
@@ -29,6 +29,7 @@ public class CollabFileParserTest {
     public void getCollaboratorsFromFile() throws CollabGraphException {
         Collaborator c = getCollaborator(collaborators, "Maital Neta");
         assertEquals("Maital Neta", c.getName());
+        assertEquals("https://psychology.unl.edu/maital-neta", c.getUrl());
 
         List<String> expectedCollaborators = new ArrayList<>(c.getCollaborators().size());
         expectedCollaborators.add("Becca Brock");

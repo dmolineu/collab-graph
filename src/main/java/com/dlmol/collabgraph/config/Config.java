@@ -1,6 +1,7 @@
 package com.dlmol.collabgraph.config;
 
 import com.dlmol.collabgraph.graph.GraphBuilder;
+import com.dlmol.collabgraph.listener.LinkViewerListener;
 import com.dlmol.collabgraph.properties.PropertyUtil;
 import com.dlmol.collabgraph.repositories.CollaboratorRepository;
 import com.dlmol.collabgraph.service.CollaboratorService;
@@ -14,6 +15,9 @@ public class Config {
     public CollaboratorService collaboratorService() {
         return new CollaboratorService();
     }
+
+    @Bean
+    public LinkViewerListener linkViewerListener() { return new LinkViewerListener();}
 
     @Bean
     public CollaboratorRepository collaboratorRepository() {

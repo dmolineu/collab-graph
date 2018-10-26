@@ -3,7 +3,7 @@ package com.dlmol.collabgraph.controller;
 import com.dlmol.collabgraph.entity.Collaborator;
 import com.dlmol.collabgraph.graph.GraphBuilder;
 import com.dlmol.collabgraph.service.CollaboratorService;
-import com.dlmol.collabgraph.viewer.listener.LinkViewerListener;
+import com.dlmol.collabgraph.listener.LinkViewerListener;
 import org.graphstream.graph.Graph;
 import org.graphstream.ui.view.Viewer;
 import org.graphstream.ui.view.ViewerPipe;
@@ -30,6 +30,9 @@ public class GraphController {
 
     @Autowired
     GraphBuilder graphBuilder;
+
+    @Autowired
+    LinkViewerListener linkViewerListener;
 
     public static String getString(List<Collaborator> collaborators) {
         if (collaborators == null || collaborators.size() == 0)
@@ -66,7 +69,7 @@ public class GraphController {
         collabViewer.setCloseFramePolicy(Viewer.CloseFramePolicy.HIDE_ONLY);
         collabViewer.disableAutoLayout();
         ViewerPipe fromViewer = collabViewer.newViewerPipe();
-        fromViewer.addViewerListener(new LinkViewerListener());
+        fromViewer.addViewerListener(linkViewerListener);
         fromViewer.addSink(collaboratorGraph);
 
         while (true) {

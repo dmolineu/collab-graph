@@ -28,7 +28,7 @@ node.nbc {
     stroke-color: #ede534;
 }
 node.nbd {
-    fill-color: rgb(255, 255, 255);
+    fill-color: rgb(0, 152, 0);
     stroke-color: rgb(0, 0, 255);
 }
 node.sclp {
@@ -36,7 +36,7 @@ node.sclp {
     stroke-color: #000000;
 }
 node.scd {
-    fill-color: rgb(255, 255, 255);
+    fill-color: rgb(0, 152, 0);
     stroke-color: rgb(220, 0, 0);
 }
 node.lpc {
@@ -56,8 +56,8 @@ node.c {
     stroke-color: rgb(237, 229, 52);
 }
 node.d {
-    fill-color: rgb(255, 255, 255);
-    stroke-color: rgb(255, 255, 255);
+    fill-color: rgb(0, 152, 0);
+    stroke-color: rgb(0, 152, 0);
 }
 node.lp {
     fill-color: rgb(0, 0, 0);
@@ -66,10 +66,10 @@ node.lp {
 edge {
     shape: line;
     size: 3px;
-    fill-color: rgb(84, 0, 8);
+    fill-color: rgb(220, 118, 4);
 }
 edge.similar {
-    fill-color: rgb(0, 0, 131);
+    fill-color: rgb(125, 0, 200);
 }
 edge.area {
     fill-color: rgb(35, 2, 0);

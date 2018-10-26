@@ -22,7 +22,7 @@ import java.util.stream.Collectors;
 public class CollabFileParser {
     private static final Logger logger = LoggerFactory.getLogger(CollabFileParser.class);
     public static final Character DELIMITER = '\t';
-    public static final int EXPECTED_DATA_GROUPING_COUNT = 6;
+    public static final int EXPECTED_DATA_GROUPING_COUNT = 7;
 
     public List<Collaborator> getCollaboratorsFromFile(File file) throws CollabGraphException {
         if (file == null || file.isFile() == false) {
@@ -71,11 +71,12 @@ public class CollabFileParser {
         }
         int i=1;
         String name = pieces[i++].trim();
+        String url = pieces[i++].trim();
         List<String> collaboratorNames = removeNulls(Arrays.asList(pieces[i++].split(",")));
         List<String> departments = removeNulls(Arrays.asList(pieces[i++].split(",")));
         List<String> centers = removeNulls(Arrays.asList(pieces[i++].split(",")));
         List<String> areas = removeNulls(Arrays.asList(pieces[i++].split(",")));
-        Collaborator c = new Collaborator(name, collaboratorNames, departments, centers, areas);
+        Collaborator c = new Collaborator(name, url, collaboratorNames, departments, centers, areas);
 
         logger.debug("addCollaborator(): For line \"" + l + "\":\nname: \"" + name + "\"\ncollaboratorNames: " + collaboratorNames
                 + "\ndepartments: " + departments + "\ncenters: " + centers + "\nareas: " + areas);
