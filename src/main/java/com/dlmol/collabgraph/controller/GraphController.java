@@ -41,6 +41,9 @@ public class GraphController {
     @Value("${links.enabled}")
     boolean linksEnabled;
 
+    @Value("${kill.process.on.graph.close}")
+    boolean killOnGraphClose;
+
     public static String getString(List<Collaborator> collaborators) {
         if (collaborators == null || collaborators.size() == 0)
             return "";
@@ -74,7 +77,8 @@ public class GraphController {
 
         Graph collaboratorGraph = graphBuilder.buildCollaboratorGraph(collaboratorMap);
         Viewer collabViewer = collaboratorGraph.display();
-        collabViewer.setCloseFramePolicy(Viewer.CloseFramePolicy.HIDE_ONLY);
+        if (!killOnGraphClose)
+            collabViewer.setCloseFramePolicy(Viewer.CloseFramePolicy.HIDE_ONLY); //Keep process alive when Graph window is closed.
         collabViewer.disableAutoLayout();
         if (linksEnabled) {
             ViewerPipe fromViewer = collabViewer.newViewerPipe();
