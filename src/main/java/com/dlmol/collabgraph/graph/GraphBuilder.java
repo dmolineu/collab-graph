@@ -175,16 +175,20 @@ public class GraphBuilder {
         if (c == null) {
             logger.warn("createNode(): Collaborator c is null! This happens when someone (" + name + ") is listed as someone else's collaborator, but didn't repond to the survey themself.");
             node = graph.addNode(name);
-            node.addAttribute("ui.label", name);
+            node.addAttribute("ui.label", getLastName(name));
         } else {
             logger.trace("createNode(): Adding node for: \"" + c.getName() + "\"");
             node = graph.addNode(c.getName());
-            node.addAttribute("ui.label", c.getName());
+            node.addAttribute("ui.label", getLastName(c.getName()));
             setNodeClass(node, c.getAreas(), nodeClassMapping);
         }
         Pair<Integer, Integer> coord = circleCoords.remove();
         node.setAttribute("xy", coord.getValue0(), coord.getValue1());
         return node;
+    }
+
+    private String getLastName(String name) {
+        return name.substring(name.indexOf(" "), name.length());
     }
 
     private void setNodeClass(Node node, List<String> areas, List<Pair<String, List<String>>> nodeClassMapping) {

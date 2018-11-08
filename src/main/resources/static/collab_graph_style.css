@@ -8,68 +8,68 @@ node {
     shadow-color: rgb(0, 39, 104), rgb(226, 237, 255);
     fill-color: rgb(127, 127, 127);
     text-background-mode: plain;
-    text-background-color: rgb(226, 237, 255);
+    text-background-color: rgba(226, 237, 255, 128);
     stroke-mode: plain;
     stroke-width: 10px;
-    text-size: 16;
+    text-size: 28;
     text-style: bold;
     text-alignment: above;
 }
 node.nbsc {
-    fill-color: rgb(0, 0, 255);
-    stroke-color: #dc0000;
+    fill-color: #cc241d;
+    stroke-color: #2a5f88;
 }
 node.scnb {
-    fill-color: #dc0000;
-    stroke-color: rgb(0, 0, 255);
+    fill-color: #2a5f88;
+    stroke-color: #cc241d;
 }
 node.nbc {
-    fill-color: rgb(0, 0, 255);
-    stroke-color: #ede534;
+    fill-color: #cc241d;
+    stroke-color: #d79921;
 }
 node.nbd {
-    fill-color: rgb(0, 152, 0);
-    stroke-color: rgb(0, 0, 255);
+    fill-color: #8ec07c;
+    stroke-color: #cc241d;
 }
 node.sclp {
-    fill-color: rgb(220, 0, 0);
+    fill-color: #2a5f88;
     stroke-color: #000000;
 }
 node.scd {
-    fill-color: rgb(0, 152, 0);
-    stroke-color: rgb(220, 0, 0);
+    fill-color: #8ec07c;
+    stroke-color: #2a5f88;
 }
 node.lpc {
-    fill-color: rgb(237, 229, 52);
+    fill-color: #d79921;
     stroke-color: #000000;
 }
 node.nb {
-    fill-color: rgb(0, 0, 255);
-    stroke-color: rgb(0, 0, 255);
+    fill-color: #cc241d;
+    stroke-color: #cc241d;
 }
 node.sc {
-    fill-color: rgb(220, 0, 0);
-    stroke-color: rgb(220, 0, 0);
+    fill-color: #2a5f88;
+    stroke-color: #2a5f88;
 }
 node.c {
-    fill-color: rgb(237, 229, 52);
-    stroke-color: rgb(237, 229, 52);
+    fill-color: #d79921;
+    stroke-color: #d79921;
 }
 node.d {
-    fill-color: rgb(0, 152, 0);
-    stroke-color: rgb(0, 152, 0);
+    fill-color: #8ec07c;
+    stroke-color: #8ec07c;
 }
 node.lp {
-    fill-color: rgb(0, 0, 0);
-    stroke-color: rgb(0, 0, 0);
+    fill-color: #282828;
+    stroke-color: #282828;
 }
 edge {
     shape: line;
     size: 3px;
-    fill-color: rgb(220, 118, 4);
+    fill-color: #b16286;
 }
 edge.similar {
-    fill-color: rgb(125, 0, 200);
+    fill-color: #928374;
 }
 edge.area {
     fill-color: rgb(35, 2, 0);
