@@ -26,12 +26,23 @@ import java.util.stream.IntStream;
 @Component
 public class GraphBuilder {
     private static final Logger logger = LoggerFactory.getLogger(GraphBuilder.class);
+    public static final String NODE_NAME_ATTRIBUTE = "ui.label";
+    public static final String UI_STYLE_ATTRIBUTE = "ui.style";
 
     @Autowired
     PropertyUtil propertyUtil;
 
     @Value("#{propertyUtil.getMappingList('${node.area.class.mapping}', ';', '=', ',')}")
     List<Pair<String, List<String>>> nodeClassMapping;
+
+    @Value("${use.connection.count.based.node.size}")
+    boolean isCountBasedNodeSizingEnabled;
+
+    @Value("${min.node.size}")
+    int minNodeSize;
+
+    @Value("${max.node.size}")
+    int maxNodeSize;
 
     // http://graphstream-project.org/doc/FAQ/Attributes/Is-there-a-list-of-attributes-with-a-predefined-meaning-for-the-layout-algorithms/
     public Graph buildCollaboratorGraph(Map<String, Collaborator> collaborators) {
@@ -52,7 +63,8 @@ public class GraphBuilder {
         collaborators.values()
                 .forEach(c -> c.getCollaborators()
                         .forEach(name -> addEdge(graph, c, name)));
-
+        if(isCountBasedNodeSizingEnabled)
+            setNodeSizesBasedOnEdgeCount(graph);
         graph.addAttribute("layout.quality", 4);
         graph.addAttribute("ui.quality");
         graph.addAttribute("ui.antialias");
@@ -62,6 +74,20 @@ public class GraphBuilder {
                 e.addAttribute("ui.class", "similar");
         });
         return graph;
+    }
+
+    private void setNodeSizesBasedOnEdgeCount(Graph graph) {
+        final int minCount = graph.getNodeSet().stream().map(n -> n.getEdgeSet().size())
+                .min(Comparator.comparing(Integer::valueOf)).get();
+        final int maxCount = graph.getNodeSet().stream().map(n -> n.getEdgeSet().size())
+                .max(Comparator.comparing(Integer::valueOf)).get();
+        final float sizePerConnection = (float) (maxNodeSize - minNodeSize) / (maxCount - minCount);
+        graph.getNodeSet().stream().forEach(n -> {
+            final int connections = n.getEdgeSet().size();
+            final String size = "size: " + (int) (minNodeSize + sizePerConnection * (connections - 1)) + "px;";
+            logger.trace("Setting attribute \"" + UI_STYLE_ATTRIBUTE + "\" to: '" + size + "' for node: " + n.getAttribute(NODE_NAME_ATTRIBUTE));
+            n.addAttribute(UI_STYLE_ATTRIBUTE, size);
+        });
     }
 
     public static Queue<Pair<Integer, Integer>> getCircleCoords(final int xMax, final int yMax, final int padding, final int n) {
@@ -104,7 +130,7 @@ public class GraphBuilder {
         //Create Area Nodes
         for (String area : areas) {
             Node node = graph.addNode(area);
-            node.addAttribute("ui.label", area);
+            node.addAttribute(NODE_NAME_ATTRIBUTE, area);
             final Pair<Integer, Integer> coord = circleCoords.remove();
             node.setAttribute("xy", coord.getValue0(), coord.getValue1());
         }
@@ -120,7 +146,7 @@ public class GraphBuilder {
                 .forEach(ai -> {
                     Edge edge = graph.addEdge(ai.getAreasLabel(), ai.getAreas().get(0), ai.getAreas().get(1));
                     final int edgeWeight = (ai.getCount() / minCount);
-                    edge.setAttribute("ui.style", "size: " + edgeWeight + "px;");
+                    edge.setAttribute(UI_STYLE_ATTRIBUTE, "size: " + edgeWeight + "px;");
                     edge.setAttribute("ui.class", "area");
                     logger.trace("Created area Edge \"" + ai.getAreasLabel() + "\" with size: " + edgeWeight);
                 });
@@ -173,13 +199,13 @@ public class GraphBuilder {
         Collaborator c = collaborators.get(name);
         Node node;
         if (c == null) {
-            logger.warn("createNode(): Collaborator c is null! This happens when someone (" + name + ") is listed as someone else's collaborator, but didn't repond to the survey themself.");
+            logger.warn("createNode(): Collaborator c is null! This happens when someone (" + name + ") is listed as someone else's collaborator, but didn't respond to the survey themself.");
             node = graph.addNode(name);
-            node.addAttribute("ui.label", getLastName(name));
+            node.addAttribute(NODE_NAME_ATTRIBUTE, getLastName(name));
         } else {
             logger.trace("createNode(): Adding node for: \"" + c.getName() + "\"");
             node = graph.addNode(c.getName());
-            node.addAttribute("ui.label", getLastName(c.getName()));
+            node.addAttribute(NODE_NAME_ATTRIBUTE, getLastName(c.getName()));
             setNodeClass(node, c.getAreas(), nodeClassMapping);
         }
         Pair<Integer, Integer> coord = circleCoords.remove();
@@ -188,7 +214,7 @@ public class GraphBuilder {
     }
 
     private String getLastName(String name) {
-        return name.substring(name.indexOf(" "), name.length());
+        return name.substring(name.lastIndexOf(" ") + 1, name.length());
     }
 
     private void setNodeClass(Node node, List<String> areas, List<Pair<String, List<String>>> nodeClassMapping) {
