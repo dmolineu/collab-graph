@@ -44,6 +44,9 @@ public class GraphController {
     @Value("${kill.process.on.graph.close}")
     boolean killOnGraphClose;
 
+    @Value("${enable.auto.layout}")
+    boolean enableAutoLayout;
+
     public static String getString(List<Collaborator> collaborators) {
         if (collaborators == null || collaborators.size() == 0)
             return "";
@@ -70,7 +73,8 @@ public class GraphController {
         if (showAreaGraph) {
             Graph areaGraph = graphBuilder.buildAreaGraph(collaboratorMap);
             Viewer areaViewer = areaGraph.display();
-            areaViewer.disableAutoLayout();
+            if (!enableAutoLayout)
+                areaViewer.disableAutoLayout();
             areaViewer.setCloseFramePolicy(Viewer.CloseFramePolicy.HIDE_ONLY);
         } else
             logger.info("'show.area.graph' property set to false, skipping Area Graph display.");
@@ -79,7 +83,8 @@ public class GraphController {
         Viewer collabViewer = collaboratorGraph.display();
         if (!killOnGraphClose)
             collabViewer.setCloseFramePolicy(Viewer.CloseFramePolicy.HIDE_ONLY); //Keep process alive when Graph window is closed.
-        collabViewer.disableAutoLayout();
+        if (!enableAutoLayout)
+            collabViewer.disableAutoLayout();
         if (linksEnabled) {
             ViewerPipe fromViewer = collabViewer.newViewerPipe();
             fromViewer.addViewerListener(linkViewerListener);
