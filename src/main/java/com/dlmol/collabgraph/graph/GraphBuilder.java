@@ -84,9 +84,13 @@ public class GraphBuilder {
         final float sizePerConnection = (float) (maxNodeSize - minNodeSize) / (maxCount - minCount);
         graph.getNodeSet().stream().forEach(n -> {
             final int connections = n.getEdgeSet().size();
-            final String size = "size: " + (int) (minNodeSize + sizePerConnection * (connections - 1)) + "px;";
-            logger.trace("Setting attribute \"" + UI_STYLE_ATTRIBUTE + "\" to: '" + size + "' for node: " + n.getAttribute(NODE_NAME_ATTRIBUTE));
-            n.addAttribute(UI_STYLE_ATTRIBUTE, size);
+            final int diameter = (int) (minNodeSize + sizePerConnection * (connections - 1));
+            final String size = "size: " + diameter + "px;";
+            final String strokeWidth = "stroke-width: " + (diameter / 4) + "px;";
+            final String attributeValue = size + "\n" + strokeWidth;
+            logger.trace("Setting attribute \"" + UI_STYLE_ATTRIBUTE + "\" to: '" + attributeValue.replace("\n", "\\n") +
+                    "' for node: " + n.getAttribute(NODE_NAME_ATTRIBUTE));
+            n.addAttribute(UI_STYLE_ATTRIBUTE, attributeValue);
         });
     }
 
